@@ -1,15 +1,24 @@
 import socket
-TCP_IP = "0.0.0.0"  # Pi IP
-TCP_PORT = 6000
-sock_tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-sock_tcp.connect((TCP_IP, TCP_PORT))
-##sock_tcp.bind('localhost',8888)
-connection , addr=sock_tcp.accept()
 
-while True:
-    cmd = input("Enter command for Pi (forward/left/right/stop/exit): ")
-    sock_tcp.send(cmd.encode())
-    if cmd.lower() == "exit":
-        break
-connection.close()
-sock_tcp.close()
+HOST = ''
+PORT = 5050
+
+server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server_socket.bind((HOST, PORT))
+server_socket.listen(1)
+
+print(f"[SERVER] Waiting for connection on port {PORT}...")
+conn, addr = server_socket.accept()
+print(f"[SERVER] Connected by {addr}")
+
+try:
+    while True:
+        data = conn.recv(1024).decode()
+        if not data:
+            break
+        print(f"[CONTROLLER] {data}")
+except KeyboardInterrupt:
+    print("\n[SERVER] Shutting down...")
+finally:
+    conn.close()
+    server_socket.close()
